@@ -13,22 +13,36 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// =========================
 // Create blog
+// =========================
 router.post("/", authMiddleware, createBlog);
 
+// =========================
 // Get all blogs
-router.get("/", authMiddleware, getAllBlogs);
+// PUBLIC ROUTE
+// =========================
+router.get("/", getAllBlogs);
 
+// =========================
 // Get my blogs
+// =========================
 router.get("/my-blogs", authMiddleware, getMyBlogs);
 
+// =========================
 // Get single blog
-router.get("/:id", authMiddleware, getBlogById);
+// PUBLIC ROUTE
+// =========================
+router.get("/:id", getBlogById);
 
+// =========================
 // Update blog
+// =========================
 router.put("/:id", authMiddleware, updateBlog);
 
+// =========================
 // Delete blog
+// =========================
 router.delete("/:id", authMiddleware, deleteBlog);
 
 export default router;

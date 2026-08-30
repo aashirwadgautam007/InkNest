@@ -8,7 +8,7 @@ function Footer() {
           {/* About */}
           <div>
             <h2 className="text-2xl font-bold mb-3">
-              BlogApp
+              InkNest
             </h2>
 
             <p className="text-gray-400">
@@ -52,7 +52,7 @@ function Footer() {
           {/* Contact */}
           <div>
             <h3 className="text-lg font-semibold mb-3">
-              BlogApp
+              InkNest
             </h3>
 
             <p className="text-gray-400">
@@ -69,7 +69,7 @@ function Footer() {
         <div className="border-t border-gray-700 mt-8 pt-6 text-center">
 
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} BlogApp.
+            © {new Date().getFullYear()} InkNest.
             All rights reserved.
           </p>
 

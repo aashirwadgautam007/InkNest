@@ -1,23 +1,22 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 function CreateBlog() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
 
     if (!title.trim() || !content.trim()) {
-      setError("Please enter title and content.");
+      setError("Please enter a title and your story.");
       return;
     }
 
@@ -26,109 +25,157 @@ function CreateBlog() {
 
       const token = localStorage.getItem("token");
 
-      await api.post(
-        "/blogs",
-        {
-          title,
-          content,
+      const response = await fetch("http://localhost:5000/api/blogs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+        body: JSON.stringify({
+          title: title.trim(),
+          content: content.trim(),
+        }),
+      });
 
-      // After creating blog, go to Home
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to publish story.");
+      }
+
       navigate("/");
-    } catch (error) {
-      console.error("Create blog error:", error);
-
-      setError(
-        error.response?.data?.message ||
-          "Failed to create blog."
-      );
+    } catch (err) {
+      console.error("Create blog error:", err);
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-3xl mx-auto px-6">
+    <div className="min-h-screen bg-[#f5f0e8] text-[#171717]">
 
-        <div className="bg-white rounded-lg shadow-md p-8">
+      <main className="max-w-5xl mx-auto px-6 py-8">
 
-          <h1 className="text-3xl font-bold mb-6">
-            Create New Blog
+        {/* Top row */}
+        <div className="flex justify-end mb-8">
+          <button
+            onClick={() => navigate("/my-blogs")}
+            className="text-sm font-medium text-[#6f6258] hover:text-[#c45c32] transition"
+          >
+            ← Back to stories
+          </button>
+        </div>
+
+        {/* Intro */}
+        <div className="mb-10">
+          <p className="text-[#c45c32] tracking-[0.3em] text-sm font-medium uppercase mb-4">
+            Your space
+          </p>
+
+          <h1 className="font-serif text-5xl md:text-6xl font-bold leading-tight mb-4">
+            Write something
+            <br />
+            worth remembering.
           </h1>
 
-          {error && (
-            <div className="bg-red-100 text-red-600 p-3 rounded mb-5">
-              {error}
+          <p className="text-lg text-[#766b63] max-w-2xl">
+            Put your thoughts into words and give your ideas a place to live.
+          </p>
+        </div>
+
+        {/* Editor */}
+        <div className="bg-[#fffdf9] border border-[#ddd3c6] rounded-2xl shadow-[0_15px_45px_rgba(40,30,20,0.08)] overflow-hidden">
+
+          {/* Editor top bar */}
+          <div className="px-8 py-5 border-b border-[#e5ddd3] flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-[#a08f82]">
+                New story
+              </p>
+
+              <p className="text-sm text-[#766b63] mt-1">
+                {user?.name ? `Writing as ${user.name}` : "Start writing"}
+              </p>
             </div>
-          )}
+
+            <span className="text-sm text-[#a08f82]">
+              Draft
+            </span>
+          </div>
 
           <form onSubmit={handleSubmit}>
 
-            {/* Title */}
-            <div className="mb-5">
-              <label className="block font-medium mb-2">
-                Blog Title
-              </label>
+            {/* Error */}
+            {error && (
+              <div className="mx-8 mt-6 bg-[#fff1ed] border border-[#e9b9a8] text-[#b54526] px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
 
+            {/* Title */}
+            <div className="px-8 pt-8">
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter blog title"
-                className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                placeholder="Give your story a title..."
+                className="w-full bg-transparent border-0 outline-none font-serif text-4xl md:text-5xl font-bold placeholder:text-[#b7ada4] text-[#171717]"
               />
             </div>
 
-            {/* Content */}
-            <div className="mb-6">
-              <label className="block font-medium mb-2">
-                Blog Content
-              </label>
+            {/* Divider */}
+            <div className="mx-8 mt-6 border-t border-[#eee7df]" />
 
+            {/* Content */}
+            <div className="px-8 py-8">
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder="Write your blog here..."
-                rows="10"
-                className="w-full border border-gray-300 rounded p-3 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
+                placeholder="Begin your story here..."
+                className="w-full min-h-[420px] bg-transparent border-0 outline-none resize-none text-lg leading-8 text-[#403a35] placeholder:text-[#b7ada4]"
               />
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-4">
+            {/* Bottom bar */}
+            <div className="px-8 py-5 border-t border-[#e5ddd3] bg-[#faf7f2] flex flex-col sm:flex-row items-center justify-between gap-4">
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 disabled:bg-gray-400"
-              >
-                {loading ? "Publishing..." : "Publish Blog"}
-              </button>
+              <p className="text-sm text-[#95877c]">
+                {content.length} characters
+              </p>
 
-              <button
-                type="button"
-                onClick={() => navigate("/")}
-                className="bg-gray-500 text-white px-6 py-3 rounded hover:bg-gray-600"
-              >
-                Cancel
-              </button>
+              <div className="flex gap-3">
 
+                <button
+                  type="button"
+                  onClick={() => navigate("/my-blogs")}
+                  className="px-6 py-3 rounded-lg border border-[#d5c9bc] text-[#514940] font-medium hover:bg-white transition"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-7 py-3 rounded-lg bg-[#a94d2a] text-white font-semibold hover:bg-[#923f21] transition disabled:opacity-50"
+                >
+                  {loading ? "Publishing..." : "Publish story →"}
+                </button>
+
+              </div>
             </div>
 
           </form>
-
         </div>
 
-      </div>
+        {/* Bottom quote */}
+        <div className="mt-10 text-center">
+          <p className="font-serif italic text-xl text-[#85786e]">
+            "Every story needs a place."
+          </p>
+        </div>
+
+      </main>
     </div>
   );
 }
